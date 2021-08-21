@@ -4,7 +4,7 @@ export function estimateFee(amount: number) {
    const clampNumber = (value: number, min: number, max: number) => Math.max(Math.min(value, Math.max(min, max)), Math.min(min, max));
    const fee = Math.round((10 / 100) * amount);
 
-   return clampNumber(fee, 0.01, 5);
+   return clampNumber(fee, 0.0001, 0.01);
 }
 
 export async function getTransactions() {
@@ -31,7 +31,7 @@ export async function getTransactions() {
          completed,
          datetime,
          amount: amount / 1e6,
-         fee
+         fee: fee / 1e6
       };
 
       if (data.scheduler_address === account?.address) user.push(transaction);
