@@ -11,11 +11,18 @@
          >{{ data.completed ? 'Completed' : 'Pending' }}</span>
          <span v-if="isOverdue" class="data-status-badge critical">Overdue</span>
       </td>
+
+      <td v-if="!data.completed && data.isOwn" class="data-action">
+         <CTAButton :loading="isCancelling" class="data-action-button" @click="invokeCancel">
+            <icon-ic-baseline-cancel />
+         </CTAButton>
+      </td>
    </tr>
 </template>
 
 <script lang="ts" setup>
 import { formatRelative } from 'date-fns';
+import { cancelTransaction } from '~/plugins/api/transactions';
 
 const props = defineProps({
    data: {
@@ -27,6 +34,15 @@ const props = defineProps({
 const baseDate = new Date();
 const isOverdue = !props.data.completed && props.data.datetime < baseDate;
 const getRelativeDate = (date: Date) => formatRelative(new Date(date), baseDate);
+
+const isCancelling = ref(false);
+const invokeCancel = () => {
+   isCancelling.value = true;
+   cancelTransaction(props.data).catch((error) => {
+      console.error(error);
+      isCancelling.value = false;
+   });
+};
 </script>
 
 <style lang="postcss">
@@ -64,6 +80,24 @@ const getRelativeDate = (date: Date) => formatRelative(new Date(date), baseDate)
                @apply bg-red-500/20 text-red-600;
             }
          }
+      }
+
+      &-action-button {
+         @apply w-42px h-42px
+         text-default bg-default rounded-full
+         outline-none active:(transform scale-97);
+
+         &.loading {
+            @apply bg-red-500/15;
+         }
+
+         svg {
+            @apply w-20px h-20px;
+         }
+
+         --spinner-color: red;
+         transition: all 200ms ease;
+         transition-property: background-color, transform;
       }
    }
 }
